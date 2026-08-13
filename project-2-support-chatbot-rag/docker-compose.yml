@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  rag-chatbot:
+    build: .
+    container_name: rag-support-chatbot
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - automation-net
+    restart: on-failure
+
+networks:
+  automation-net:
+    name: automation-net
+    driver: bridge

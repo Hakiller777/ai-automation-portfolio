@@ -1,0 +1,8 @@
+{
+  "channel": "email",
+  "from": "facilities@ourcompany.example",
+  "to": "ap@ourcompany.example",
+  "subject": "Office closure notice",
+  "received_at": "2026-06-15T09:00:00",
+  "body": "Hi team,\n\nJust a heads up that the office will be closed next Monday for the holiday.\nSee you all Tuesday!\n\nBest,\nFacilities\n"
+}

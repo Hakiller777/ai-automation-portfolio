@@ -1,0 +1,172 @@
+{
+  "meta": {
+    "instanceId": "portfolio-demo"
+  },
+  "name": "RAG Support Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support-query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "rag-support-webhook-001"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://rag-chatbot:8001/query",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\"question\": {{ JSON.stringify($json.body.question || $json.body.message || '') }} }",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "node-http",
+      "name": "Query RAG Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-status",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if",
+      "name": "Query Succeeded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "s1", "name": "status",     "value": "success",                                                                 "type": "string"},
+            {"id": "s2", "name": "answer",     "value": "={{ $('Query RAG Agent').item.json.result.answer }}",         "type": "string"},
+            {"id": "s3", "name": "sources",    "value": "={{ $('Query RAG Agent').item.json.result.sources }}",        "type": "array"},
+            {"id": "s4", "name": "confidence", "value": "={{ $('Query RAG Agent').item.json.result.confidence }}",     "type": "number"},
+            {"id": "s5", "name": "query",      "value": "={{ $('Query RAG Agent').item.json.result.query }}",          "type": "string"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-success",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1000, 180]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "node-respond-ok",
+      "name": "Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1240, 180]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "e1", "name": "status",  "value": "error",                                                                                          "type": "string"},
+            {"id": "e2", "name": "message", "value": "={{ $('Query RAG Agent').item.json.message || 'RAG query failed' }}", "type": "string"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-error",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1000, 420]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "node-respond-err",
+      "name": "Respond 500 Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1240, 420]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [{"node": "Query RAG Agent", "type": "main", "index": 0}]
+      ]
+    },
+    "Query RAG Agent": {
+      "main": [
+        [{"node": "Query Succeeded?", "type": "main", "index": 0}]
+      ]
+    },
+    "Query Succeeded?": {
+      "main": [
+        [{"node": "Format Success", "type": "main", "index": 0}],
+        [{"node": "Format Error",   "type": "main", "index": 0}]
+      ]
+    },
+    "Format Success": {
+      "main": [
+        [{"node": "Respond 200 OK",    "type": "main", "index": 0}]
+      ]
+    },
+    "Format Error": {
+      "main": [
+        [{"node": "Respond 500 Error", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "id": "rag-support-chatbot-v1",
+  "tags": [{"name": "portfolio", "id": "tag-portfolio"}]
+}

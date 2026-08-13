@@ -1,0 +1,8 @@
+{
+  "channel": "email",
+  "from": "billing@unknownvendor.example",
+  "to": "ap@ourcompany.example",
+  "subject": "Invoice INV-2026-2099",
+  "received_at": "2026-06-15T09:00:00",
+  "body": "INVOICE\n\nInvoice Number: INV-2026-2099\nInvoice Date: 2026-06-16\n\nLine Items:\n1 x Miscellaneous Consulting Services $500.00\n"
+}

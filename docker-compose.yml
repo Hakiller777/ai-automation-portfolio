@@ -1,0 +1,125 @@
+version: "3.9"
+
+# ============================================================
+# Base Docker Compose — AI Automation Portfolio
+# Services: n8n (self-hosted) · python-app · PostgreSQL
+# Deploy: Railway (primary) · local dev (docker compose up)
+# Secrets: all via .env — never hardcoded here
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # PostgreSQL — persistence layer for n8n + all Python apps
+  # ----------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: portfolio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - automation-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  # ----------------------------------------------------------
+  # n8n — self-hosted workflow automation engine
+  # UI available at http://localhost:5678
+  # ----------------------------------------------------------
+  n8n:
+    image: n8nio/n8n:1.47.1
+    container_name: portfolio-n8n
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Database backend (PostgreSQL instead of SQLite)
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: db
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # n8n host / webhook configuration
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: ${N8N_PORT:-5678}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL}
+
+      # Security — basic auth for the UI
+      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE:-true}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+
+      # Encryption key for stored credentials
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+
+      # Telemetry off — no data sent to n8n cloud
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - automation-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:${N8N_PORT:-5678}/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+
+  # ----------------------------------------------------------
+  # python-app — base Python 3.11 service (placeholder)
+  # Each project extends this with its own src/ + logic
+  # ----------------------------------------------------------
+  python-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: portfolio-python
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      n8n:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      N8N_WEBHOOK_BASE_URL: ${N8N_WEBHOOK_URL}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - automation-net
+
+# ----------------------------------------------------------
+# Networks
+# ----------------------------------------------------------
+networks:
+  automation-net:
+    driver: bridge
+
+# ----------------------------------------------------------
+# Volumes
+# ----------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+  n8n_data:
+    driver: local

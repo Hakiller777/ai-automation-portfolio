@@ -1,0 +1,15 @@
+# Core
+pydantic==2.7.1
+pydantic-settings==2.3.0
+loguru==0.7.2
+python-dotenv==1.0.1
+
+# HTTP API (Flask — n8n integration)
+flask==3.0.3
+
+# Vector store (self-hosted, embedded mode)
+chromadb==0.5.0
+numpy<2.0
+
+# Testing
+pytest==8.2.2

@@ -1,0 +1,16 @@
+# Core
+pydantic==2.7.1
+pydantic-settings==2.3.0
+loguru==0.7.2
+python-dotenv==1.0.1
+
+# HTTP API (Flask — n8n integration)
+flask==3.0.3
+
+# PDF handling — parsing real invoice/receipt PDFs and generating synthetic
+# sample data + PDF reports
+pypdf==4.2.0
+reportlab==4.2.0
+
+# Testing
+pytest==8.2.2

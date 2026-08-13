@@ -1,0 +1,19 @@
+# Core
+pydantic==2.7.1
+pydantic-settings==2.3.0
+loguru==0.7.2
+pandas==2.2.2
+python-dotenv==1.0.1
+
+# HTTP API (Flask — n8n integration)
+flask==3.0.3
+
+# AI (Claude API — responses simulated in tests, no real key needed)
+anthropic==0.28.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Testing
+pytest==8.2.2
+pytest-asyncio==0.23.7

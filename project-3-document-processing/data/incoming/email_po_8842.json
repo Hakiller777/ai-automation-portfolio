@@ -1,0 +1,8 @@
+{
+  "channel": "email",
+  "from": "orders@anchorpointlogistics.example",
+  "to": "ap@ourcompany.example",
+  "subject": "PO-8842 Confirmation",
+  "received_at": "2026-06-15T09:00:00",
+  "body": "PURCHASE ORDER\n\nPO Number: PO-8842\nInvoice Date: 2026-06-14\nVendor: Anchor Point Logistics\nVendor Address: 305 Dockside Ave, Newark, NJ 07102\n\n12 x Pallet Shipping - Regional $4800.00\n1 x Freight Insurance $150.00\n\nSubtotal: $4950.00\nTax: $0.00\nTotal: $4950.00\n"
+}

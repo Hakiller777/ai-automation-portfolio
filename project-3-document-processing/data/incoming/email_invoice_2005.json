@@ -1,0 +1,8 @@
+{
+  "channel": "email",
+  "from": "billing@nimbusdata.example",
+  "to": "ap@ourcompany.example",
+  "subject": "Invoice INV-2026-2005",
+  "received_at": "2026-06-15T09:00:00",
+  "body": "INVOICE\n\nInvoice Number: INV-2026-2005\nInvoice Date: 2026-06-12\nDue Date: 2026-06-26\nVendor: NimbusData Analytics\nVendor Address: 1200 Innovation Dr, San Jose, CA 95110\nBill To: Acme Retail Group\nCustomer Email: billing@acmeretail.com\n\nLine Items:\n1 x Data Pipeline Setup $1800.00\n2 x Monthly Analytics Subscription $600.00\n\nSubtotal: $2400.00\nTax (8.5%): $204.00\nTotal Due: $2604.00\n"
+}

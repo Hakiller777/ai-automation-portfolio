@@ -1,0 +1,35 @@
+# ============================================================
+# requirements-base.txt — shared dependencies across all projects
+# Every project requirements.txt starts with:
+#   -r ../../shared/requirements-base.txt
+# Then adds project-specific packages below.
+# ============================================================
+
+# --- Core ---
+python-dotenv==1.0.0
+pydantic==2.7.0
+pydantic-settings==2.3.0
+loguru==0.7.2
+
+# --- HTTP client ---
+httpx==0.27.0
+
+# --- Database ---
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+
+# --- Testing ---
+pytest==8.2.0
+pytest-mock==3.14.0
+pytest-asyncio==0.23.7
+
+# ============================================================
+# Project-specific packages (DO NOT add here — add in project)
+# ============================================================
+# Project 2 — RAG Support Chatbot:
+#   chromadb==0.5.0
+#   sentence-transformers==3.0.0
+#
+# Project 3 — Document Processing:
+#   weasyprint==62.1
+#   pypdf==4.2.0

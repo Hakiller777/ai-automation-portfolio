@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "instanceId": "portfolio-demo"
+  },
+  "name": "Document Processing Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "document-processing",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "document-processing-webhook-001"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://document-processor:8002/process",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\"sources\": {{ JSON.stringify($json.body.sources || []) }} }",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "node-http",
+      "name": "Trigger Document Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-status",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if",
+      "name": "Pipeline Succeeded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "s1", "name": "status",       "value": "success",                                                                          "type": "string"},
+            {"id": "s2", "name": "total_documents", "value": "={{ $('Trigger Document Pipeline').item.json.result.total_documents }}", "type": "number"},
+            {"id": "s3", "name": "registered",    "value": "={{ $('Trigger Document Pipeline').item.json.result.registered }}",        "type": "number"},
+            {"id": "s4", "name": "reported",      "value": "={{ $('Trigger Document Pipeline').item.json.result.reported }}",          "type": "number"},
+            {"id": "s5", "name": "needs_review",  "value": "={{ $('Trigger Document Pipeline').item.json.result.needs_review }}",      "type": "number"},
+            {"id": "s6", "name": "failed",        "value": "={{ $('Trigger Document Pipeline').item.json.result.failed }}",            "type": "number"},
+            {"id": "s7", "name": "output_dir",    "value": "={{ $('Trigger Document Pipeline').item.json.result.output_dir }}",        "type": "string"},
+            {"id": "s8", "name": "processed_at",  "value": "={{ $('Trigger Document Pipeline').item.json.result.processed_at }}",      "type": "string"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-success",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1000, 180]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "node-respond-ok",
+      "name": "Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1240, 180]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "e1", "name": "status",  "value": "error",                                                                                                  "type": "string"},
+            {"id": "e2", "name": "message", "value": "={{ $('Trigger Document Pipeline').item.json.message || 'Document pipeline execution failed' }}", "type": "string"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-error",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1000, 420]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "node-respond-err",
+      "name": "Respond 500 Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1240, 420]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [{"node": "Trigger Document Pipeline", "type": "main", "index": 0}]
+      ]
+    },
+    "Trigger Document Pipeline": {
+      "main": [
+        [{"node": "Pipeline Succeeded?", "type": "main", "index": 0}]
+      ]
+    },
+    "Pipeline Succeeded?": {
+      "main": [
+        [{"node": "Format Success", "type": "main", "index": 0}],
+        [{"node": "Format Error",   "type": "main", "index": 0}]
+      ]
+    },
+    "Format Success": {
+      "main": [
+        [{"node": "Respond 200 OK",    "type": "main", "index": 0}]
+      ]
+    },
+    "Format Error": {
+      "main": [
+        [{"node": "Respond 500 Error", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "id": "document-processing-pipeline-v1",
+  "tags": [{"name": "portfolio", "id": "tag-portfolio"}]
+}

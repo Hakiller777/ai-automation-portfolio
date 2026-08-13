@@ -1,0 +1,8 @@
+{
+  "channel": "email",
+  "from": "receipts@greenleafcatering.example",
+  "to": "ap@ourcompany.example",
+  "subject": "Receipt RCT-91004",
+  "received_at": "2026-06-15T09:00:00",
+  "body": "RECEIPT\n\nReceipt Number: RCT-91004\nTransaction Date: 2026-06-13\nVendor: GreenLeaf Office Catering\nVendor Address: 58 Pine St, Chicago, IL 60601\n\n1 x Team Lunch Catering (20 people) $340.00\n1 x Delivery Fee $25.00\n\nSubtotal: $365.00\nTax: $29.20\nTotal: $394.20\n"
+}
