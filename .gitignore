@@ -242,10 +242,3 @@ chroma_store/
 **/data/output/*
 !**/data/output/.gitkeep
 **/data/registry.db
-
-# Local development context — never published
-.claude/
-Comunicacion_Claude_Project/
-AGENTS.md
-CLAUDE.md
-.mcp.json
