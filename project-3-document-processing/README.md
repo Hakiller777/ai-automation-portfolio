@@ -171,7 +171,7 @@ pip install -r requirements.txt
 pytest tests/ -v
 ```
 
-17 tests covering extraction (PDF/email/raw-text loading, field + line-item parsing), classification (type detection, missing-field validation), the registry (register, fetch, filtered queries), and the pipeline (happy path, `needs_review` routing, per-document failure isolation) — each module includes happy-path, edge-case, and failure-mode coverage.
+21 tests covering extraction (PDF/email/raw-text loading, field + line-item parsing), classification (type detection, missing-field validation), the registry (register, fetch, filtered queries), and the pipeline (happy path, `needs_review` routing, per-document failure isolation) — each module includes happy-path, edge-case, and failure-mode coverage — plus an end-to-end run over the 10 shipped sample documents, so the README numbers are checked on every test run.
 
 ---
 
