@@ -155,9 +155,11 @@ curl "http://localhost:8002/documents?status=needs_review"
 
 Reports for validated documents land in `data/output/` as timestamped JSON (or PDF, if `REPORT_FORMAT=pdf`).
 
-**Run without Docker (CLI mode):**
+**Run without Docker (CLI mode)** — needs Python 3.11; the pinned dependencies don't install on 3.13+:
 
 ```bash
+python3.11 -m venv .venv          # Windows: py -3.11 -m venv .venv
+source .venv/bin/activate         # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python -m src.pipeline --input-dir data/incoming
 ```
@@ -165,6 +167,8 @@ python -m src.pipeline --input-dir data/incoming
 ---
 
 ## Running Tests
+
+In a Python 3.11 environment (see *Run without Docker* above):
 
 ```bash
 pip install -r requirements.txt

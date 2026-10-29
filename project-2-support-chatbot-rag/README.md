@@ -155,9 +155,11 @@ curl -X POST http://localhost:8001/query \
 
 The response includes the answer, the list of source documents it cited, and a confidence score.
 
-**Run without Docker (CLI ingestion + tests):**
+**Run without Docker (CLI ingestion + tests)** — needs Python 3.11; the pinned dependencies don't install on 3.13+:
 
 ```bash
+python3.11 -m venv .venv          # Windows: py -3.11 -m venv .venv
+source .venv/bin/activate         # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Build the index directly
@@ -170,6 +172,8 @@ python -m src.api
 ---
 
 ## Running Tests
+
+In a Python 3.11 environment (see *Run without Docker* above):
 
 ```bash
 pip install -r requirements.txt

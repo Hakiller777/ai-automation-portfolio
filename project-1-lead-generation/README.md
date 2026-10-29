@@ -147,9 +147,11 @@ curl -X POST http://localhost:8000/run \
 
 The processed output lands in `data/output/` as a timestamped CSV and JSON report.
 
-**Run without Docker (CLI mode):**
+**Run without Docker (CLI mode)** — needs Python 3.11; the pinned dependencies don't install on 3.13+:
 
 ```bash
+python3.11 -m venv .venv          # Windows: py -3.11 -m venv .venv
+source .venv/bin/activate         # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python -m src.pipeline --input data/sample_leads.csv
 ```
@@ -157,6 +159,8 @@ python -m src.pipeline --input data/sample_leads.csv
 ---
 
 ## Running Tests
+
+In a Python 3.11 environment (see *Run without Docker* above):
 
 ```bash
 pip install -r requirements.txt

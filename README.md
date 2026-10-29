@@ -87,7 +87,7 @@ ai-automation-portfolio/
 
 ## Quickstart
 
-**Prerequisites:** Docker Desktop (or Docker Engine + Compose plugin) and Git.
+**Prerequisites:** Docker Desktop (or Docker Engine + Compose plugin) and Git. Running the test suites or a project's CLI mode outside Docker also needs **Python 3.11** — the pinned dependencies have no prebuilt packages for Python 3.13 or newer, so `pip install` fails there.
 
 ```bash
 git clone https://github.com/Hakiller777/ai-automation-portfolio.git
@@ -109,10 +109,12 @@ docker compose up -d
 
 This starts **n8n** at `http://localhost:5678` and **PostgreSQL** on port `5432`. Import a project's workflow from n8n via **Workflows → Import from file**, selecting `n8n/workflow.json` inside the project folder.
 
-To run a test suite:
+To run a test suite (Python 3.11):
 
 ```bash
 cd project-1-lead-generation
+python3.11 -m venv .venv          # Windows: py -3.11 -m venv .venv
+source .venv/bin/activate         # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 pytest tests/ -v
 ```
