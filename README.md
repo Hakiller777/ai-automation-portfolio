@@ -9,12 +9,12 @@
 
 Each project in this repository solves a real, expensive, repetitive business problem: qualifying inbound leads, answering first-line support tickets, and keying invoice data by hand. They are built the way production systems are built — separated ingestion / processing / output layers, error handling at every stage, structured logging, a test suite, and a deployment guide.
 
-**77 tests across the three projects.** Every number quoted in a README was produced by running the pipeline against the sample data committed here.
+**78 tests across the three projects.** Every number quoted in a README was produced by running the pipeline against the sample data committed here.
 
 | Project | What it does | Verified run |
 |---|---|---|
 | **[1 — Lead Generation + Outreach](project-1-lead-generation/)** | Enriches raw B2B leads, scores them 1–10 with an explainable weighted model, writes a personalized outreach email per qualified lead, and disqualifies poor-fit accounts. | 53 leads loaded · 14 hot / 36 warm / 3 disqualified · 35 tests |
-| **[2 — RAG Support Chatbot](project-2-support-chatbot-rag/)** | Ingests a product knowledge base into a vector store and answers questions from the actual docs, with source citations and a confidence gate that escalates instead of guessing. | 20 KB docs · 0/8 out-of-KB questions answered (hard gate) · 21 tests |
+| **[2 — RAG Support Chatbot](project-2-support-chatbot-rag/)** | Ingests a product knowledge base into a vector store and answers questions from the actual docs, with source citations and a confidence gate that escalates instead of guessing. | 20 KB docs · 0/8 out-of-KB questions answered (hard gate) · 22 tests |
 | **[3 — Document Processing & Invoicing](project-3-document-processing/)** | Extracts structured fields from PDF invoices and inbound emails, classifies and validates each one, persists to a queryable registry, and routes anything questionable to human review. | 10 documents · 8 reported / 2 needs review / 0 failed · 21 tests |
 
 ---

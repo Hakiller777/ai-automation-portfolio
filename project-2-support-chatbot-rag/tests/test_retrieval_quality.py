@@ -19,6 +19,7 @@ The two failure modes are deliberately not weighted equally:
     picks up the ticket. Asserted as a coverage floor, not perfection.
 """
 
+import re
 from pathlib import Path
 
 import pytest
@@ -170,3 +171,4 @@ class TestFallbackEndToEnd:
         assert response.sources, "Expected at least one cited source document"
         assert response.confidence >= ingested.min_confidence_threshold
         assert "don't have enough information" not in response.answer.lower()
+        assert not re.search(r"(^|\s)#{1,6}\s", response.answer), "Markdown headings leaked into the answer"

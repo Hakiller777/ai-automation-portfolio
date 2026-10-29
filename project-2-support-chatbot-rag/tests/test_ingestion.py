@@ -21,6 +21,10 @@ class TestChunkText:
         first_tail = chunks[0].split()[-5:]
         second_head = chunks[1].split()[:5]
         assert first_tail == second_head
+        # windows keep the source's line breaks, so markdown headings stay recognizable
+        assert chunk_text("## Billing\n\nInvoices are monthly.", chunk_size=20, overlap=5) == [
+            "## Billing\n\nInvoices are monthly."
+        ]
 
     # Edge case 1: empty input
     def test_empty_text_returns_no_chunks(self):

@@ -1,6 +1,6 @@
 """Tests for src/agent.py
 
-Coverage per module: 1 happy path, 2 edge cases, 1 error case.
+Coverage per module: 1 happy path, 3 edge cases, 1 error case.
 """
 
 import pytest
@@ -8,6 +8,7 @@ import pytest
 import src.agent as agent_module
 from src.agent import generate_answer
 from src.exceptions import AgentError
+from src.models import RetrievedChunk
 
 
 class TestGenerateAnswer:
@@ -29,6 +30,34 @@ class TestGenerateAnswer:
         response = generate_answer("Something obscure", weak_chunks, test_settings)
         assert response.sources == []
         assert "don't have enough information" in response.answer.lower()
+
+    # Edge case 3: chunks are word windows over markdown, so they carry section
+    # headings and list numbering, and can open on the tail of a heading cut mid-line
+    def test_markdown_structure_never_reaches_the_answer(self, test_settings):
+        chunks = [
+            RetrievedChunk(
+                chunk_id="c1",
+                source="billing.md",
+                text=(
+                    "# AcmeCRM — Billing\n\n## Changing plans\n\n"
+                    "1. Open Settings, Billing.\n"
+                    "2. Pick the new plan and confirm."
+                ),
+                score=0.82,
+            ),
+            RetrievedChunk(
+                chunk_id="c2",
+                source="deal_pipeline.md",
+                text="Working the Kanban board\n\nThe Deals view shows one column per stage.",
+                score=0.80,
+            ),
+        ]
+        response = generate_answer("How do I change my plan?", chunks, test_settings)
+        assert "#" not in response.answer
+        assert "Open Settings, Billing. Pick the new plan and confirm." in response.answer
+        assert "2." not in response.answer
+        assert "The Deals view shows one column per stage." in response.answer
+        assert "Kanban board" not in response.answer
 
     # Error case: unexpected failure during synthesis is wrapped in AgentError
     def test_synthesis_failure_raises_agent_error(self, relevant_chunks, test_settings, monkeypatch):

@@ -11,6 +11,7 @@ chunks are always embedded under one consistent weighting.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import chromadb
@@ -23,15 +24,21 @@ from .models import DocumentChunk, IngestionResult
 
 IDF_FILENAME = "idf.json"
 
+_WORD = re.compile(r"\S+")
+
 
 def chunk_text(text: str, chunk_size: int, overlap: int) -> list[str]:
     """Split text into overlapping word-count windows.
 
+    Word counts decide where each window starts and ends, but the window keeps
+    the source's own line breaks, so markdown structure (headings, list items)
+    survives into the chunk and the answer step can tell a heading from prose.
+
     Returns an empty list for blank input. `overlap` must be smaller than
     `chunk_size` or the sliding window never advances.
     """
-    words = text.split()
-    if not words:
+    spans = [match.span() for match in _WORD.finditer(text)]
+    if not spans:
         return []
 
     if overlap >= chunk_size:
@@ -40,9 +47,9 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> list[str]:
     chunks: list[str] = []
     start = 0
     step = chunk_size - overlap
-    while start < len(words):
-        window = words[start : start + chunk_size]
-        chunks.append(" ".join(window))
+    while start < len(spans):
+        window = spans[start : start + chunk_size]
+        chunks.append(text[window[0][0] : window[-1][1]])
         start += step
 
     return chunks

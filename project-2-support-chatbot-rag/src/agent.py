@@ -53,27 +53,63 @@ def _select_context(chunks: list[RetrievedChunk], max_chunks: int = 3) -> list[R
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _SENTENCE_END = (".", "!", "?", ":")
+_HEADING = re.compile(r"#{1,6}\s")
+# A line that opens a list item or a bold FAQ question is content, never a heading tail.
+_LIST_ITEM = re.compile(r"[-*]|\d+\.")
+# Bullet / numbering markers; left in, "1." and "2." split off as sentences of their own.
+_LIST_MARKER = re.compile(r"^(?:[-*]|\d+\.)\s+")
+
+
+def _is_heading_tail(lines: list[str]) -> bool:
+    """True when a window opens partway through a heading line.
+
+    The tail of the heading sits alone on the first line, followed by the
+    blank line that separates it from its section, and it is not a sentence.
+    """
+    first = lines[0].strip()
+    return (
+        len(lines) > 2
+        and not lines[1].strip()
+        and not first.endswith(_SENTENCE_END)
+        and not _LIST_ITEM.match(first)
+    )
 
 
 def _clean_excerpt(text: str, max_sentences: int = 2) -> str:
-    """Trim a retrieved chunk down to whole sentences.
+    """Trim a retrieved chunk down to whole sentences of body text.
 
-    Chunks are fixed-width word windows, so they routinely start and end
-    mid-sentence. Splicing them in raw produces answers that open halfway
-    through a thought ("...you want to reactivate. Can I export my data?").
-    Dropping the partial fragments at both ends costs a little context and
-    buys an answer a human can actually read.
+    Chunks are fixed-width word windows over markdown, so they routinely
+    start and end mid-sentence and carry section headings along. Splicing
+    them in raw produces answers that open halfway through a thought
+    ("...you want to reactivate. Can I export my data?") or read headings as
+    prose ("# AcmeCRM — Contact Management ## Contact records A contact
+    record stores..."). Dropping the headings and the partial fragments at
+    both ends costs a little context and buys an answer a human can read.
     """
-    stripped = text.strip()
-    if not stripped:
+    lines = text.strip().splitlines()
+    if not lines:
+        return ""
+    if _is_heading_tail(lines):
+        lines = lines[1:]
+
+    body = " ".join(
+        _LIST_MARKER.sub("", line.strip())
+        for line in lines
+        if line.strip() and not _HEADING.match(line.strip())
+    )
+    body = " ".join(body.split())  # hard-wrapped lines and table padding read as one line
+    if not body:
         return ""
 
-    sentences = _SENTENCE_SPLIT.split(stripped)
+    sentences = _SENTENCE_SPLIT.split(body)
 
-    # A window that doesn't begin at a sentence or a markdown heading opens
-    # with the tail of the previous sentence — drop it.
-    if len(sentences) > 1 and not (stripped[0].isupper() or stripped[0] in "#*-"):
+    # A window that doesn't begin at a sentence opens with the tail of the
+    # previous sentence — drop it. An abbreviation inside that tail ("e.g.")
+    # splits it in two, so keep dropping while the next piece starts lowercase.
+    if len(sentences) > 1 and not (body[0].isupper() or body[0] in "*-"):
         sentences = sentences[1:]
+        while len(sentences) > 1 and sentences[0][:1].islower():
+            sentences = sentences[1:]
 
     # Likewise, drop a dangling final fragment when something remains.
     if len(sentences) > 1 and not sentences[-1].rstrip().endswith(_SENTENCE_END):
@@ -89,7 +125,7 @@ def _synthesize_answer(query: str, context: list[RetrievedChunk]) -> str:
     as context in production.
     """
     excerpts = [excerpt for chunk in context if (excerpt := _clean_excerpt(chunk.text))]
-    body = " ".join(excerpts) or " ".join(chunk.text.strip() for chunk in context)
+    body = " ".join(excerpts) or " ".join(" ".join(chunk.text.split()) for chunk in context)
     sources = ", ".join(sorted({chunk.source for chunk in context}))
     return (
         f"Based on the AcmeCRM documentation ({sources}): {body}"
