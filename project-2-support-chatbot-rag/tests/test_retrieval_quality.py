@@ -28,7 +28,12 @@ from src.config import Settings
 from src.ingestion import ingest_documents
 from src.retrieval import retrieve
 
-REAL_KB_DIR = Path(__file__).resolve().parent.parent / "data" / "knowledge_base"
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+REAL_KB_DIR = PROJECT_DIR / "data" / "knowledge_base"
+
+# The configuration users actually run: the quickstart copies it to .env,
+# docker compose injects it, and DEPLOYMENT.md mirrors it.
+SHIPPED_ENV_FILE = PROJECT_DIR / ".env.example"
 
 # Questions the bundled AcmeCRM knowledge base genuinely covers.
 IN_SCOPE_QUESTIONS = [
@@ -71,9 +76,18 @@ MIN_IN_SCOPE_COVERAGE = 0.80
 
 @pytest.fixture(scope="module")
 def live_settings(tmp_path_factory) -> Settings:
-    """Production settings against the real KB, in a throwaway vector store."""
+    """Shipped settings (`.env.example`) against the real KB, in a throwaway vector store.
+
+    Evaluating the file users copy, not the code defaults, is deliberate: the
+    retrieval rewrite once moved `embedding_dim` and `min_confidence_threshold`
+    in `src/config.py` while `.env.example` kept the old values, and anyone who
+    followed the quickstart got an agent that answered every out-of-scope
+    question. Loading the shipped file makes that drift fail here.
+    """
+    assert SHIPPED_ENV_FILE.is_file(), "the gate must evaluate the shipped .env.example"
     store = tmp_path_factory.mktemp("chroma_live")
     return Settings(
+        _env_file=SHIPPED_ENV_FILE,
         chroma_persist_dir=str(store),
         collection_name="retrieval_quality_eval",
         knowledge_base_dir=str(REAL_KB_DIR),

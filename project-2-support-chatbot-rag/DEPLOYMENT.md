@@ -59,11 +59,11 @@ On the app service, set the following variables under **Variables**:
 | `CHROMA_PERSIST_DIR`          | `data/chroma_store`                        | Local to the container unless a Volume is attached |
 | `COLLECTION_NAME`             | `acmecrm_knowledge_base`                   |                                                     |
 | `KNOWLEDGE_BASE_DIR`          | `data/knowledge_base`                      | Ships baked into the image                         |
-| `EMBEDDING_DIM`               | `256`                                       |                                                     |
+| `EMBEDDING_DIM`               | `4096`                                      | Hashed TF-IDF buckets — keep well above the KB vocabulary |
 | `CHUNK_SIZE`                  | `120`                                       | Words per chunk                                    |
 | `CHUNK_OVERLAP`               | `20`                                        | Words of overlap between consecutive chunks        |
 | `TOP_K`                       | `4`                                         | Chunks retrieved per query                         |
-| `MIN_CONFIDENCE_THRESHOLD`    | `0.15`                                      | Below this, the agent returns a fallback answer    |
+| `MIN_CONFIDENCE_THRESHOLD`    | `0.18`                                      | Below this, the agent returns a fallback answer. Tuned on `tests/test_retrieval_quality.py` |
 | `PORT`                        | `8001`                                      | Railway sets this automatically — do not override unless required |
 
 These mirror `.env.example` in this folder. Do not commit a real `.env` file — Railway variables replace it in production.

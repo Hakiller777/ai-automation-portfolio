@@ -182,7 +182,7 @@ pytest tests/ -v
 
 21 tests covering ingestion (chunking, empty/missing KB handling, idempotent re-indexing), retrieval (top-k ranking, empty query, unseeded collection), and answer generation (grounded answers, source citation, low-confidence fallback) — each module includes happy-path, edge-case, and failure-mode coverage.
 
-`tests/test_retrieval_quality.py` runs the real pipeline over the real knowledge base and doubles as the evaluation set behind `MIN_CONFIDENCE_THRESHOLD`. It asserts two different things, on purpose:
+`tests/test_retrieval_quality.py` runs the real pipeline over the real knowledge base, with the settings shipped in `.env.example`, and doubles as the evaluation set behind `MIN_CONFIDENCE_THRESHOLD`. It asserts two different things, on purpose:
 
 - **Every** out-of-scope question must stay below the threshold. Answering a question the knowledge base does not cover produces a confident, cited, wrong answer — the worst outcome this system can produce, so it is a hard gate.
 - **Most** in-scope questions must clear it (80% floor, currently 14/15). A bag-of-words retriever will always miss some phrasings, and forcing 100% here would mean lowering the threshold until out-of-scope questions start getting answered — trading a safe failure for a dangerous one. The miss escalates to a human, which is the correct behaviour when confidence is genuinely low.
