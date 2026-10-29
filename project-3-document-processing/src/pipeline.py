@@ -76,7 +76,7 @@ def process_document(source: str, settings: Settings, registry: DocumentRegistry
     )
 
     if not classification.is_valid:
-        logger.warning(f"'{source_name}' needs review — missing fields: {classification.missing_fields}")
+        logger.warning(f"'{source_name}' needs review — {classification.review_reason}")
         document.status = ProcessingStatus.NEEDS_REVIEW
         try:
             registry.register(document)

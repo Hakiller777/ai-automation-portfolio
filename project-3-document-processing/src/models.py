@@ -63,6 +63,15 @@ class ClassificationResult(BaseModel):
     missing_fields: list[str] = Field(default_factory=list)
     is_valid: bool
 
+    @property
+    def review_reason(self) -> Optional[str]:
+        """Why the document needs human review, or None when it is valid."""
+        if self.is_valid:
+            return None
+        if self.document_type == DocumentType.UNKNOWN:
+            return "unrecognized document type"
+        return f"missing fields: {', '.join(self.missing_fields)}"
+
 
 class Document(BaseModel):
     """Aggregate domain entity persisted in the registry."""

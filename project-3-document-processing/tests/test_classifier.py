@@ -23,6 +23,7 @@ class TestClassify:
         assert result.document_type == DocumentType.INVOICE
         assert result.is_valid is True
         assert result.missing_fields == []
+        assert result.review_reason is None
 
     # Edge case 1: missing required fields marks the document invalid, not an exception
     def test_incomplete_invoice_is_invalid(self, incomplete_invoice_extraction):
@@ -30,6 +31,8 @@ class TestClassify:
         assert result.is_valid is False
         assert "vendor_name" in result.missing_fields
         assert "total" in result.missing_fields
+        assert result.review_reason.startswith("missing fields: ")
+        assert "vendor_name" in result.review_reason
 
     # Edge case 2: unrecognized text classifies as UNKNOWN and is always invalid
     def test_unrelated_text_is_unknown_and_invalid(self, extractor):
@@ -37,6 +40,9 @@ class TestClassify:
         result = classify(extraction)
         assert result.document_type == DocumentType.UNKNOWN
         assert result.is_valid is False
+        # Nothing is "missing" from an unknown type, so the reason must say why
+        assert result.missing_fields == []
+        assert result.review_reason == "unrecognized document type"
 
     # Error case: unexpected failure during type detection is wrapped in ClassificationError
     def test_detection_failure_raises_classification_error(self, invoice_extraction, monkeypatch):
